@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Sms.Api.Models;
 using System.Data;
 
@@ -45,7 +45,7 @@ public class MessageRepository
 
         command.Parameters
             .Add("@Status", SqlDbType.VarChar, 16).Value =
-                Models.MessageStatus.Pending
+                MessageStatus.Pending
                     .ToString()
                     .ToLowerInvariant();
 
@@ -53,6 +53,7 @@ public class MessageRepository
 
         return id;
     }
+
     public async Task UpdateAsync(
     Guid id,
     MessageStatus status,
@@ -94,6 +95,7 @@ public class MessageRepository
 
         await command.ExecuteNonQueryAsync();
     }
+
     public async Task<MessageResponse?> GetAsync(Guid id)
     {
         const string sql = """
@@ -139,6 +141,7 @@ public class MessageRepository
             UpdatedAt: DateTime.SpecifyKind(
                 reader.GetDateTime(7), DateTimeKind.Utc));
     }
+
     public async Task<List<MessageResponse>> ListAsync(
     MessageStatus? status)
     {
@@ -148,7 +151,7 @@ public class MessageRepository
             ProviderId, Error, CreatedAt, UpdatedAt
         FROM dbo.Messages
         WHERE @Status IS NULL OR Status = @Status
-        ORDER BY CreatedAt DESC;
+        ORDER BY CreatedAt DESC, Id DESC;
         """;
 
         await using var connection =

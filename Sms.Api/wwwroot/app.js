@@ -2,8 +2,11 @@ const tableBody = document.getElementById("messages");
 const statusFilter = document.getElementById("status-filter");
 const refreshButton = document.getElementById("refresh-button");
 const notice = document.getElementById("notice");
+let messageRequestId = 0;
 
 async function loadMessages() {
+    const requestId = ++messageRequestId;
+
     try {
         const status = statusFilter.value;
 
@@ -18,6 +21,10 @@ async function loadMessages() {
         }
 
         const messages = await response.json();
+
+        if (requestId !== messageRequestId) {
+            return;
+        }
 
         tableBody.replaceChildren();
 
@@ -63,12 +70,15 @@ async function loadMessages() {
             tableBody.appendChild(row);
         }
     } catch (error) {
-        notice.textContent = "לא ניתן לטעון את ההודעות. נסי לרענן.";
+        if (requestId === messageRequestId) {
+            notice.textContent = "לא ניתן לטעון את ההודעות. נסי לרענן.";
+        }
     }
 }
 
 async function checkStatus(id, button) {
     button.disabled = true;
+    let status = "accepted";
 
     try {
         const response = await fetch(`/messages/${id}`);
@@ -78,6 +88,7 @@ async function checkStatus(id, button) {
         }
 
         const message = await response.json();
+        status = message.status;
 
         notice.textContent = message.error
             ? "לא ניתן לרענן את הסטטוס מול הספק. מוצג המצב האחרון שנשמר."
@@ -87,7 +98,7 @@ async function checkStatus(id, button) {
     } catch (error) {
         notice.textContent = "בדיקת הסטטוס נכשלה. אפשר לנסות שוב.";
     } finally {
-        button.disabled = false;
+        button.disabled = status !== "accepted";
     }
 }
 
@@ -105,6 +116,7 @@ const phoneInput = document.getElementById("phone");
 const bodyInput = document.getElementById("body");
 const sendButton = document.getElementById("send-button");
 let sending = false;
+let phoneRequestId = 0;
 
 function updateSendButton() {
     sendButton.disabled = sending || phoneInput.disabled || !phoneInput.value;
@@ -136,6 +148,7 @@ async function loadEmployees() {
 }
 
 async function loadPhones() {
+    const requestId = ++phoneRequestId;
     const employeeId = employeeSelect.value;
     phoneInput.disabled = true;
     phoneInput.replaceChildren(new Option("בחרי מספר טלפון", ""));
@@ -154,8 +167,8 @@ async function loadPhones() {
 
         const phones = await response.json();
 
-        // Ignore a response for an employee who is no longer selected.
-        if (employeeSelect.value !== employeeId) {
+        // Only the latest selection request may update the phone list.
+        if (requestId !== phoneRequestId) {
             return;
         }
 
@@ -169,7 +182,7 @@ async function loadPhones() {
             phoneInput.replaceChildren(new Option("אין מספרי טלפון לעובד", ""));
         }
     } catch (error) {
-        if (employeeSelect.value === employeeId) {
+        if (requestId === phoneRequestId) {
             notice.textContent = "טעינת מספרי הטלפון נכשלה. בחרי שוב את העובד.";
         }
     }

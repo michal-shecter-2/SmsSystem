@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Sms.Api.Models;
 using Sms.Api.Services;
 
@@ -41,6 +41,7 @@ public class MessagesController : ControllerBase
 
         return Ok(message);
     }
+
     [HttpGet]
     public async Task<IActionResult> List(
     [FromQuery] MessageStatus? status = null)
