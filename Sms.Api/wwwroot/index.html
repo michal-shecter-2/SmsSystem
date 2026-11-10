@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>שליחת SMS</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <main>
+        <h1>שליחת SMS</h1>
+
+        <form id="send-form">
+            <label for="phone">מספר טלפון</label>
+            <input id="phone"
+                   type="tel"
+                   dir="ltr"
+                   placeholder="0501234567"
+                   required>
+
+            <label for="body">תוכן ההודעה — עד 160 תווים</label>
+            <textarea id="body"
+                      rows="3"
+                      maxlength="160"
+                      required></textarea>
+
+            <button id="send-button" type="submit" disabled>
+                שליחה
+            </button>
+        </form>
+
+        <p id="notice" role="status"></p>
+
+        <h2>הודעות</h2>
+
+        <div class="toolbar">
+            <label for="status-filter">סטטוס</label>
+
+            <select id="status-filter">
+                <option value="">All</option>
+                <option value="pending">pending</option>
+                <option value="accepted">accepted</option>
+                <option value="delivered">delivered</option>
+                <option value="failed">failed</option>
+                <option value="unknown">unknown</option>
+            </select>
+
+            <button id="refresh-button" type="button" disabled>
+                רענון רשימה
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>טלפון</th>
+                        <th>תוכן</th>
+                        <th>סטטוס</th>
+                        <th>תאריך יצירה</th>
+                        <th>עדכון סטטוס</th>
+                    </tr>
+                </thead>
+                <tbody id="messages"></tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>
