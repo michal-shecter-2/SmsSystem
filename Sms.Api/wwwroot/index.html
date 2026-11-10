@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="utf-8">
@@ -12,12 +12,15 @@
         <h1>שליחת SMS</h1>
 
         <form id="send-form">
-            <label for="phone">מספר טלפון</label>
-            <input id="phone"
-                   type="tel"
-                   dir="ltr"
-                   placeholder="0501234567"
-                   required>
+            <label for="employee">עובד — שם פרטי, שם משפחה וכתובת</label>
+            <select id="employee" required disabled>
+                <option value="">טוען עובדים…</option>
+            </select>
+
+            <label for="phone">מספר טלפון של העובד</label>
+            <select id="phone" dir="ltr" required disabled>
+                <option value="">בחרי עובד תחילה</option>
+            </select>
 
             <label for="body">תוכן ההודעה — עד 160 תווים</label>
             <textarea id="body"

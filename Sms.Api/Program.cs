@@ -25,6 +25,7 @@ namespace Sms.Api
                 client.Timeout = TimeSpan.FromSeconds(3);
             });
             builder.Services.AddScoped<MessageRepository>();
+            builder.Services.AddScoped<EmployeeRepository>();
             builder.Services.AddScoped<MessageService>();
             var app = builder.Build();
             app.UseDefaultFiles();
