@@ -1,6 +1,6 @@
-@Sms.MockProvider_HostAddress = http://localhost:5062
+@host = https://localhost:7172
 
-GET {{Sms.MockProvider_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{host}}/sms
+Content-Type: application/json
 
-###
+{"to":"0501234567","body":"Hello"}

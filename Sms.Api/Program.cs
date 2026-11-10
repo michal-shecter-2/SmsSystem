@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Sms.Api.Data;
 using Sms.Api.Providers;
 using Sms.Api.Services;
@@ -9,10 +11,11 @@ namespace Sms.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(
+                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+            });
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpClient<HttpSmsProvider>(client =>
@@ -25,12 +28,10 @@ namespace Sms.Api
                 client.Timeout = TimeSpan.FromSeconds(3);
             });
             builder.Services.AddScoped<MessageRepository>();
+            builder.Services.AddScoped<EmployeeRepository>();
             builder.Services.AddScoped<MessageService>();
             var app = builder.Build();
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -38,9 +39,8 @@ namespace Sms.Api
             }
 
             app.UseHttpsRedirection();
-
-            app.UseAuthorization();
-
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
             app.MapControllers();
 

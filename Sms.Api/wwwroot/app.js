@@ -1,9 +1,12 @@
-﻿const tableBody = document.getElementById("messages");
+const tableBody = document.getElementById("messages");
 const statusFilter = document.getElementById("status-filter");
 const refreshButton = document.getElementById("refresh-button");
 const notice = document.getElementById("notice");
+let messageRequestId = 0;
 
 async function loadMessages() {
+    const requestId = ++messageRequestId;
+
     try {
         const status = statusFilter.value;
 
@@ -18,6 +21,10 @@ async function loadMessages() {
         }
 
         const messages = await response.json();
+
+        if (requestId !== messageRequestId) {
+            return;
+        }
 
         tableBody.replaceChildren();
 
@@ -63,12 +70,15 @@ async function loadMessages() {
             tableBody.appendChild(row);
         }
     } catch (error) {
-        notice.textContent = "לא ניתן לטעון את ההודעות. נסי לרענן.";
+        if (requestId === messageRequestId) {
+            notice.textContent = "לא ניתן לטעון את ההודעות. נסי לרענן.";
+        }
     }
 }
 
 async function checkStatus(id, button) {
     button.disabled = true;
+    let status = "accepted";
 
     try {
         const response = await fetch(`/messages/${id}`);
@@ -78,6 +88,7 @@ async function checkStatus(id, button) {
         }
 
         const message = await response.json();
+        status = message.status;
 
         notice.textContent = message.error
             ? "לא ניתן לרענן את הסטטוס מול הספק. מוצג המצב האחרון שנשמר."
@@ -87,7 +98,7 @@ async function checkStatus(id, button) {
     } catch (error) {
         notice.textContent = "בדיקת הסטטוס נכשלה. אפשר לנסות שוב.";
     } finally {
-        button.disabled = false;
+        button.disabled = status !== "accepted";
     }
 }
 
@@ -99,10 +110,88 @@ refreshButton.addEventListener("click", loadMessages);
 
 loadMessages();
 
+const employeeSelect = document.getElementById("employee");
 const sendForm = document.getElementById("send-form");
 const phoneInput = document.getElementById("phone");
 const bodyInput = document.getElementById("body");
 const sendButton = document.getElementById("send-button");
+let sending = false;
+let phoneRequestId = 0;
+
+function updateSendButton() {
+    sendButton.disabled = sending || phoneInput.disabled || !phoneInput.value;
+}
+
+async function loadEmployees() {
+    try {
+        const response = await fetch("/employees");
+
+        if (!response.ok) {
+            throw new Error("Employee loading failed.");
+        }
+
+        const employees = await response.json();
+        employeeSelect.replaceChildren(new Option(
+            employees.length ? "בחרי עובד" : "אין עובדים להצגה", ""));
+
+        for (const employee of employees) {
+            employeeSelect.add(new Option(
+                `${employee.firstName} ${employee.lastName} — ${employee.address}`,
+                employee.id));
+        }
+
+        employeeSelect.disabled = employees.length === 0;
+    } catch (error) {
+        employeeSelect.replaceChildren(new Option("טעינת העובדים נכשלה", ""));
+        notice.textContent = "לא ניתן לטעון עובדים. נסי לרענן את הדף.";
+    }
+}
+
+async function loadPhones() {
+    const requestId = ++phoneRequestId;
+    const employeeId = employeeSelect.value;
+    phoneInput.disabled = true;
+    phoneInput.replaceChildren(new Option("בחרי מספר טלפון", ""));
+    updateSendButton();
+
+    if (!employeeId) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/employees/${employeeId}/phones`);
+
+        if (!response.ok) {
+            throw new Error("Phone loading failed.");
+        }
+
+        const phones = await response.json();
+
+        // Only the latest selection request may update the phone list.
+        if (requestId !== phoneRequestId) {
+            return;
+        }
+
+        for (const phone of phones) {
+            phoneInput.add(new Option(phone, phone));
+        }
+
+        phoneInput.disabled = phones.length === 0;
+
+        if (phones.length === 0) {
+            phoneInput.replaceChildren(new Option("אין מספרי טלפון לעובד", ""));
+        }
+    } catch (error) {
+        if (requestId === phoneRequestId) {
+            notice.textContent = "טעינת מספרי הטלפון נכשלה. בחרי שוב את העובד.";
+        }
+    }
+
+    updateSendButton();
+}
+
+employeeSelect.addEventListener("change", loadPhones);
+phoneInput.addEventListener("change", updateSendButton);
 
 sendForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -116,7 +205,8 @@ sendForm.addEventListener("submit", async (event) => {
         return;
     }
 
-    sendButton.disabled = true;
+    sending = true;
+    updateSendButton();
     sendButton.textContent = "שולח…";
     notice.textContent = "";
 
@@ -154,9 +244,11 @@ sendForm.addEventListener("submit", async (event) => {
         notice.textContent =
             "לא התקבל אישור ליצירת ההודעה. בדקי ברשימה לפני ניסיון נוסף, כדי להימנע מכפילות.";
     } finally {
-        sendButton.disabled = false;
+        sending = false;
+        updateSendButton();
         sendButton.textContent = "שליחה";
     }
 });
 
-sendButton.disabled = false;
+updateSendButton();
+loadEmployees();

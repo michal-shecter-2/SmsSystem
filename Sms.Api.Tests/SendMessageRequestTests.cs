@@ -7,11 +7,11 @@ namespace Sms.Api.Tests;
 public class SendMessageRequestTests
 {
     [Theory]
-    [InlineData("0501234567", "ωμεν", true)]
-    [InlineData("+972501234567", "ωμεν", true)]
-    [InlineData("050123", "ωμεν", false)]
-    [InlineData("05012345678", "ωμεν", false)]
-    [InlineData("", "ωμεν", false)]
+    [InlineData("0501234567", "Χ©ΧΧ•Χ", true)]
+    [InlineData("+972501234567", "Χ©ΧΧ•Χ", true)]
+    [InlineData("050123", "Χ©ΧΧ•Χ", false)]
+    [InlineData("05012345678", "Χ©ΧΧ•Χ", false)]
+    [InlineData("", "Χ©ΧΧ•Χ", false)]
     [InlineData("0501234567", "", false)]
     [InlineData("0501234567", "   ", false)]
     public void ValidatesPhoneAndBody(
@@ -42,7 +42,7 @@ public class SendMessageRequestTests
         var request = new SendMessageRequest
         {
             To = "0501234567",
-            Body = new string('ΰ', length)
+            Body = new string('Χ', length)
         };
 
         var isValid = Validator.TryValidateObject(

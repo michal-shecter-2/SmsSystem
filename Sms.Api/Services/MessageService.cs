@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Sms.Api.Data;
 using Sms.Api.Models;
 using Sms.Api.Providers;
@@ -42,7 +42,7 @@ public class MessageService
 
             if (response.Id == Guid.Empty)
             {
-                throw new InvalidOperationException(
+                throw new JsonException(
                     "Provider returned an invalid ID.");
             }
 
@@ -51,7 +51,7 @@ public class MessageService
                 "accepted" => MessageStatus.Accepted,
                 "delivered" => MessageStatus.Delivered,
                 "failed" => MessageStatus.Failed,
-                _ => throw new InvalidOperationException(
+                _ => throw new JsonException(
                     "Provider returned an invalid status.")
             };
 
@@ -60,8 +60,7 @@ public class MessageService
         catch (Exception ex) when (
             ex is HttpRequestException
                 or TaskCanceledException
-                or JsonException
-                or InvalidOperationException)
+                or JsonException)
         {
             error = "provider_outcome_unknown";
 
@@ -102,7 +101,7 @@ public class MessageService
 
             if (response.Id != providerId)
             {
-                throw new InvalidOperationException(
+                throw new JsonException(
                     "Provider returned a different message ID.");
             }
 
@@ -111,15 +110,14 @@ public class MessageService
                 "accepted" => MessageStatus.Accepted,
                 "delivered" => MessageStatus.Delivered,
                 "failed" => MessageStatus.Failed,
-                _ => throw new InvalidOperationException(
+                _ => throw new JsonException(
                     "Provider returned an invalid status.")
             };
         }
         catch (Exception ex) when (
             ex is HttpRequestException
                 or TaskCanceledException
-                or JsonException
-                or InvalidOperationException)
+                or JsonException)
         {
             error = "status_refresh_failed";
 
@@ -135,6 +133,7 @@ public class MessageService
 
         return await _repository.GetAsync(id);
     }
+
     public Task<List<MessageResponse>> ListAsync(MessageStatus? status)
     {
         return _repository.ListAsync(status);

@@ -1,6 +1,12 @@
-@Sms.Api_HostAddress = http://localhost:5058
+@host = https://localhost:7071
 
-GET {{Sms.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+GET {{host}}/employees
 
 ###
+GET {{host}}/messages
+
+###
+POST {{host}}/messages
+Content-Type: application/json
+
+{"to":"0501234567","body":"Hello"}
